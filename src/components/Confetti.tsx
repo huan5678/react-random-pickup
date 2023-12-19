@@ -1,24 +1,37 @@
-import {useCallback, useEffect, useRef} from 'react';
+import {FC, useCallback, useEffect, useRef} from 'react';
 
 import ReactCanvasConfetti from 'react-canvas-confetti';
+import {CreateTypes} from 'canvas-confetti';
 
-export default function Confetti() {
-  const refAnimationInstance = useRef(null);
+const canvasStyles = {
+  position: 'fixed',
+  pointerEvents: 'none',
+  width: '100%',
+  height: '100%',
+  top: 0,
+  left: 0,
+};
 
-  const getInstance = useCallback((instance) => {
-    refAnimationInstance.current = instance;
+interface IFireworks {
+  children: (e: {start?: () => void; stop: () => void; pause: () => void}) => JSX.Element;
+}
+interface ConfettiOptions {
+  spread: number;
+  startVelocity?: number;
+  decay?: number;
+  scalar?: number;
+}
+
+const Confetti: FC<IFireworks> = () => {
+  const refAnimationInstance = useRef<CreateTypes | null>(null);
+
+  const makeShot = useCallback((particleRatio: number, opts: ConfettiOptions) => {
+    refAnimationInstance.current?.({
+      ...opts,
+      origin: {y: 0.7},
+      particleCount: Math.floor(200 * particleRatio),
+    });
   }, []);
-
-  const makeShot = useCallback((particleRatio, opts) => {
-    refAnimationInstance.current &&
-      refAnimationInstance.current({
-        ...opts,
-        origin: {y: 0.7},
-        particleCount: Math.floor(200 * particleRatio),
-      });
-  }, []);
-
-  useEffect(() => fire(), []);
 
   const fire = useCallback(() => {
     makeShot(0.25, {
@@ -49,17 +62,16 @@ export default function Confetti() {
     });
   }, [makeShot]);
 
-  return (
-    <ReactCanvasConfetti
-      refConfetti={getInstance}
-      style={{
-        position: 'fixed',
-        pointerEvents: 'none',
-        width: '100%',
-        height: '100%',
-        top: 0,
-        left: 0,
-      }}
-    />
-  );
-}
+  const setRefConfetti = useCallback((instance: CreateTypes | null) => {
+    refAnimationInstance.current = instance;
+  }, []);
+
+  useEffect(() => {
+    fire();
+  }, [fire]);
+
+  // @ts-expect-error Description of why the @ts-expect-error is necessary
+  return <ReactCanvasConfetti refConfetti={setRefConfetti} style={canvasStyles} />;
+};
+
+export default Confetti;
