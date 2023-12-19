@@ -1,4 +1,4 @@
-import {FC, useCallback, useEffect, useRef} from 'react';
+import {useCallback, useEffect, useRef} from 'react';
 
 import ReactCanvasConfetti from 'react-canvas-confetti';
 import {CreateTypes} from 'canvas-confetti';
@@ -12,9 +12,6 @@ const canvasStyles = {
   left: 0,
 };
 
-interface IFireworks {
-  children: (e: {start?: () => void; stop: () => void; pause: () => void}) => JSX.Element;
-}
 interface ConfettiOptions {
   spread: number;
   startVelocity?: number;
@@ -22,7 +19,7 @@ interface ConfettiOptions {
   scalar?: number;
 }
 
-const Confetti: FC<IFireworks> = () => {
+const Confetti = () => {
   const refAnimationInstance = useRef<CreateTypes | null>(null);
 
   const makeShot = useCallback((particleRatio: number, opts: ConfettiOptions) => {
