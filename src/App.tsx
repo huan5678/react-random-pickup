@@ -12,6 +12,7 @@ import { Checkbox } from "./components/ui/checkbox";
 import { RadioGroup } from "./components/ui/radio-group";
 import { RadioGroupItem } from "@radix-ui/react-radio-group";
 import { Switch } from "./components/ui/switch";
+import { quest1 } from "./data/quest1";
 
 function App() {
   const [quests, setQuests] = useState<IQuest[]>([]);
@@ -56,6 +57,12 @@ function App() {
     } catch (error) {
       console.error(error);
     }
+  };
+
+  const handleAddQuestion = () => {
+    quest1.forEach((quest) => {
+      addQuest(quest);
+    });
   };
 
   const handleClearSelectStrings = () => {
@@ -245,6 +252,12 @@ function App() {
                 />
                 <Label htmlFor="drawCount">三連抽</Label>
               </div>
+            </div>
+            <div className="flex items-center justify-between gap-4">
+              <Label htmlFor="setQuest1">讀取題庫1</Label>
+              <Button id="setQuest1" onClick={handleAddQuestion}>
+                加入題庫
+              </Button>
             </div>
             <div>
               <Label htmlFor="input" className="text-lg">
