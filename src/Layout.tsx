@@ -1,4 +1,4 @@
-import backgroundImg from "./assets/images/bg.jpg";
+import backgroundImg from "@/assets/images/bg.jpg";
 
 export default function RootLayout({
   children,

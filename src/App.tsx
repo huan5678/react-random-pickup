@@ -113,7 +113,7 @@ function App() {
 
   const startAnimation = () => {
     if (quests.length === 0) return;
-
+    setShowConfetti(false);
     setIsSpinning(true);
     animate();
 
@@ -151,7 +151,7 @@ function App() {
         <h1 className="text-4xl font-bold tracking-wide text-center">
           2024台灣AI生成大賽(鳥巢盃)
         </h1>
-        <h2 className="text-2xl font-bold text-center">
+        <h2 className="text-3xl font-bold text-center">
           {rank === "rematch"
             ? "複賽"
             : rank === "finals"
@@ -162,17 +162,20 @@ function App() {
       </div>
       <div className="flex gap-4">
         <section className="container flex flex-col justify-between px-4 py-8 bg-white rounded-2xl">
-          <div className="flex flex-col items-end gap-2">
-            <p>目前題目數: {quests.filter((q) => !q.selected).length}</p>
-            <Button
-              onClick={startAnimation}
-              disabled={quests.length <= drawCount || isSpinning}
-            >
-              隨機抽選
-            </Button>
-          </div>
+          {selectedStrings.length === 0 && (
+            <div className="flex flex-col items-end gap-2">
+              <p>目前題目數: {quests.filter((q) => !q.selected).length}</p>
+              <Button
+                type="button"
+                onClick={startAnimation}
+                disabled={quests.length <= drawCount || isSpinning}
+              >
+                隨機抽選
+              </Button>
+            </div>
+          )}
+          {isSpinning && <StringSpinner strings={quests} />}
           <div className="flex flex-col w-full gap-4 mx-auto">
-            <div>{isSpinning && <StringSpinner strings={quests} />}</div>
             <Dialog open={openDialog} onOpenChange={setOpenDialog}>
               <DialogContent>
                 <DialogHeader>
@@ -204,6 +207,7 @@ function App() {
                 </ul>
                 <div className="flex justify-end w-full">
                   <Button
+                    type="button"
                     variant="outline"
                     onClick={() => handleClearSelectStrings()}
                   >
@@ -218,9 +222,7 @@ function App() {
       </div>
       <div className="absolute bottom-0 right-0 flex items-center justify-end w-full gap-4 mb-2 text-white -translate-x-4 -translate-y-4 opacity-25">
         <Drawer>
-          <DrawerTrigger>
-            <Button>設定</Button>
-          </DrawerTrigger>
+          <DrawerTrigger>設定</DrawerTrigger>
           <DrawerContent className="container max-w-screen">
             <DrawerHeader>
               <DrawerTitle>輸入模式</DrawerTitle>
@@ -234,6 +236,7 @@ function App() {
                   比賽階段
                 </Label>
                 <Button
+                  type="button"
                   id="gameTitle"
                   onClick={() => setRank("rematch")}
                   variant={rank === "rematch" ? "secondary" : "outline"}
@@ -241,6 +244,7 @@ function App() {
                   複賽
                 </Button>
                 <Button
+                  type="button"
                   id="gameTitle"
                   onClick={() => setRank("finals")}
                   variant={rank === "finals" ? "default" : "outline"}
@@ -266,6 +270,7 @@ function App() {
                 <div className="flex flex-col items-center gap-4">
                   <Label htmlFor="setQuest1">讀取題庫1</Label>
                   <Button
+                    type="button"
                     id="setQuest1"
                     onClick={() => handleAddQuestion(quest1)}
                   >
@@ -275,6 +280,7 @@ function App() {
                 <div className="flex flex-col items-center gap-4">
                   <Label htmlFor="setQuest2">讀取題庫2</Label>
                   <Button
+                    type="button"
                     id="setQuest2"
                     onClick={() => handleAddQuestion(quest2)}
                   >

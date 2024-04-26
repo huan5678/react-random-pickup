@@ -1,3 +1,6 @@
+declare module '*.jpg';
+declare module '*.png';
+
 type ICurrentItem = {
   display: string;
   index: number | null;
