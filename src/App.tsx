@@ -1,24 +1,38 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTransition, animated } from "@react-spring/web";
 
-import { Button } from "./components/ui/button";
-import { Input } from "./components/ui/input";
-import Confetti from "./components/Confetti";
-import Dialog from "./components/Dialog";
-import StringSpinner from "./components/StringSpinner";
-import { Label } from "./components/ui/label";
-import RootLayout from "./Layout";
-import { Checkbox } from "./components/ui/checkbox";
-import { RadioGroup } from "./components/ui/radio-group";
-import { RadioGroupItem } from "@radix-ui/react-radio-group";
-import { Switch } from "./components/ui/switch";
-import { quest1 } from "./data/quest1";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import Confetti from "@/components/Confetti";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
+import StringSpinner from "@/components/StringSpinner";
+import { Label } from "@/components/ui/label";
+import RootLayout from "@/Layout";
+import { Switch } from "@/components/ui/switch";
+import { quest1 } from "@/data/quest1";
+import { quest2 } from "@/data/quest2";
 
 function App() {
   const [quests, setQuests] = useState<IQuest[]>([]);
   const [input, setInput] = useState<string>("");
   const [drawCount, setDrawCount] = useState<number>(1);
-  const [showInput, setShowInput] = useState<boolean>(false);
+  const [openDialog, setOpenDialog] = useState<boolean>(false);
   const [rank, setRank] = useState<IRank>("unused");
   const [isSpinning, setIsSpinning] = useState<boolean>(false);
   const [showConfetti, setShowConfetti] = useState<boolean>(false);
@@ -26,8 +40,6 @@ function App() {
   const [selectedStrings, setSelectedStrings] = useState<IQuest[]>([]);
 
   const animationFrameId = useRef<number | null>(null);
-
-  const dialogRef = useRef<HTMLDialogElement>(null);
 
   const selectedTransitions = useTransition(selectedStrings, {
     from: { opacity: 0, transform: "translateY(-20px)" },
@@ -59,8 +71,8 @@ function App() {
     }
   };
 
-  const handleAddQuestion = () => {
-    quest1.forEach((quest) => {
+  const handleAddQuestion = (quests: string[]) => {
+    quests.forEach((quest) => {
       addQuest(quest);
     });
   };
@@ -78,15 +90,6 @@ function App() {
       setTimeout(() => setInputError(false), 500);
     }
   };
-
-  function toggleDialog() {
-    if (!dialogRef.current) {
-      return;
-    }
-    dialogRef.current.hasAttribute("open")
-      ? dialogRef.current.close()
-      : dialogRef.current.showModal();
-  }
 
   const animate = () => {
     const update = () => {
@@ -170,16 +173,20 @@ function App() {
           </div>
           <div className="flex flex-col w-full gap-4 mx-auto">
             <div>{isSpinning && <StringSpinner strings={quests} />}</div>
-            <Dialog toggleDialog={toggleDialog} ref={dialogRef}>
-              <h2 className="text-4xl">抽選結果</h2>
-              <p className="text-2xl">獲選的是:</p>
-              <ul>
-                {selectedStrings.map((item) => (
-                  <li className="text-lg" key={item.name}>
-                    {item.name}
-                  </li>
-                ))}
-              </ul>
+            <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle className="text-4xl">抽選結果</DialogTitle>
+                </DialogHeader>
+                <DialogDescription>獲選的是:</DialogDescription>
+                <ul>
+                  {selectedStrings.map((item) => (
+                    <li className="text-lg" key={item.name}>
+                      {item.name}
+                    </li>
+                  ))}
+                </ul>
+              </DialogContent>
             </Dialog>
             {selectedStrings.length > 0 && (
               <div>
@@ -208,84 +215,98 @@ function App() {
             {showConfetti && <Confetti />}
           </div>
         </section>
-        {showInput && (
-          <section className="px-4 py-8 space-y-6 bg-white rounded-2xl">
-            <div className="flex flex-col items-center justify-center gap-4">
-              <Label htmlFor="gameTitle" className="block text-lg">
-                比賽階段
-              </Label>
-              <RadioGroup
-                value={rank}
-                onValueChange={(value) => setRank(value as IRank)}
-                defaultValue="unused"
-                className="flex items-center justify-center gap-4 peer/overview"
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem
-                    value="rematch"
-                    checked={rank === "rematch"}
-                    id="option-one"
-                    className="text-primary"
-                  />
-                  <Label htmlFor="option-one">複賽</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem
-                    value="finals"
-                    checked={rank === "finals"}
-                    id="option-two"
-                  />
-                  <Label htmlFor="option-two">決賽</Label>
-                </div>
-              </RadioGroup>
-            </div>
-            <div className="space-y-2">
-              <h3 className="text-lg">抽選數量</h3>
-              <div className="flex items-center gap-4">
-                <Label htmlFor="drawCount">單抽</Label>
-                <Switch
-                  id="drawCount"
-                  value={drawCount}
-                  onCheckedChange={(value: boolean) =>
-                    setDrawCount(value === true ? 3 : 1)
-                  }
-                />
-                <Label htmlFor="drawCount">三連抽</Label>
+      </div>
+      <div className="absolute bottom-0 right-0 flex items-center justify-end w-full gap-4 mb-2 text-white -translate-x-4 -translate-y-4 opacity-25">
+        <Drawer>
+          <DrawerTrigger>
+            <Button>設定</Button>
+          </DrawerTrigger>
+          <DrawerContent className="container max-w-screen">
+            <DrawerHeader>
+              <DrawerTitle>輸入模式</DrawerTitle>
+            </DrawerHeader>
+            <DrawerDescription>
+              參數相關設定，包含比賽階段、抽選數量、題目名稱、題庫選擇等。
+            </DrawerDescription>
+            <div className="flex items-center gap-8 py-8">
+              <div className="flex flex-col items-center justify-center gap-4">
+                <Label htmlFor="gameTitle" className="block text-lg">
+                  比賽階段
+                </Label>
+                <Button
+                  id="gameTitle"
+                  onClick={() => setRank("rematch")}
+                  variant={rank === "rematch" ? "secondary" : "outline"}
+                >
+                  複賽
+                </Button>
+                <Button
+                  id="gameTitle"
+                  onClick={() => setRank("finals")}
+                  variant={rank === "finals" ? "default" : "outline"}
+                >
+                  決賽
+                </Button>
               </div>
-            </div>
-            <div className="flex items-center justify-between gap-4">
-              <Label htmlFor="setQuest1">讀取題庫1</Label>
-              <Button id="setQuest1" onClick={handleAddQuestion}>
-                加入題庫
-              </Button>
+              <div className="space-y-4">
+                <h3 className="text-lg text-center">抽選數量</h3>
+                <div className="flex items-center gap-4">
+                  <Label htmlFor="drawCount">單抽</Label>
+                  <Switch
+                    id="drawCount"
+                    value={drawCount}
+                    onCheckedChange={(value: boolean) =>
+                      setDrawCount(value === true ? 3 : 1)
+                    }
+                  />
+                  <Label htmlFor="drawCount">三連抽</Label>
+                </div>
+              </div>
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex flex-col items-center gap-4">
+                  <Label htmlFor="setQuest1">讀取題庫1</Label>
+                  <Button
+                    id="setQuest1"
+                    onClick={() => handleAddQuestion(quest1)}
+                  >
+                    加入題庫
+                  </Button>
+                </div>
+                <div className="flex flex-col items-center gap-4">
+                  <Label htmlFor="setQuest2">讀取題庫2</Label>
+                  <Button
+                    id="setQuest2"
+                    onClick={() => handleAddQuestion(quest2)}
+                  >
+                    加入題庫
+                  </Button>
+                </div>
+              </div>
             </div>
             <div>
               <Label htmlFor="input" className="text-lg">
-                題目名稱
+                手動輸入題目名稱
               </Label>
-              <Input
-                id="input"
-                type="text"
-                placeholder="輸入字串"
-                value={input}
-                onChange={handleInputChange}
-                onKeyUp={handleOnKeyEnter}
-                className={`${
-                  inputError ? "shake-rotate shake-settings" : ""
-                } transition`}
-              />
-              <Button onClick={handleAddString}>新增題目</Button>
+              <div className="flex gap-4">
+                <Input
+                  id="input"
+                  type="text"
+                  placeholder="輸入字串"
+                  value={input}
+                  onChange={handleInputChange}
+                  onKeyUp={handleOnKeyEnter}
+                  className={`${
+                    inputError ? "shake-rotate shake-settings" : ""
+                  } transition`}
+                />
+                <Button onClick={handleAddString}>新增題目</Button>
+              </div>
             </div>
-          </section>
-        )}
-      </div>
-      <div className="absolute bottom-0 right-0 flex items-center justify-end w-full gap-4 mb-2 text-white -translate-x-4 -translate-y-4 opacity-25">
-        <Label htmlFor="showSettings">輸入模式</Label>
-        <Checkbox
-          id="showSettings"
-          checked={showInput}
-          onCheckedChange={() => setShowInput(!showInput)}
-        />
+            <DrawerFooter>
+              <DrawerClose>關閉</DrawerClose>
+            </DrawerFooter>
+          </DrawerContent>
+        </Drawer>
       </div>
     </RootLayout>
   );
