@@ -152,11 +152,11 @@ function App() {
           2024台灣AI生成大賽(鳥巢盃)
         </h1>
         <h2 className="text-3xl font-bold text-center">
-          {rank === "rematch"
-            ? "複賽"
-            : rank === "finals"
-            ? "決賽"
-            : "預備階段"}{" "}
+          {rank === 'rematch'
+            ? '複賽'
+            : rank === 'finals'
+            ? '決賽'
+            : '預備階段'}{' '}
           出題系統
         </h2>
       </div>
@@ -199,7 +199,7 @@ function App() {
                     <animated.li
                       key={string.name}
                       style={style}
-                      className={"px-6 py-4 border rounded shadow text-6xl"}
+                      className={'px-6 py-4 border rounded shadow text-6xl'}
                     >
                       {string.name}
                     </animated.li>
@@ -238,16 +238,16 @@ function App() {
                 <Button
                   type="button"
                   id="gameTitle"
-                  onClick={() => setRank("rematch")}
-                  variant={rank === "rematch" ? "secondary" : "outline"}
+                  onClick={() => setRank('rematch')}
+                  variant={rank === 'rematch' ? 'secondary' : 'outline'}
                 >
                   複賽
                 </Button>
                 <Button
                   type="button"
                   id="gameTitle"
-                  onClick={() => setRank("finals")}
-                  variant={rank === "finals" ? "default" : "outline"}
+                  onClick={() => setRank('finals')}
+                  variant={rank === 'finals' ? 'default' : 'outline'}
                 >
                   決賽
                 </Button>
@@ -265,6 +265,13 @@ function App() {
                   />
                   <Label htmlFor="drawCount">三連抽</Label>
                 </div>
+                <Input
+                  type="number"
+                  value={drawCount}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setDrawCount(parseInt(e.target.value))
+                  }
+                />
               </div>
               <div className="flex items-center justify-between gap-4">
                 <div className="flex flex-col items-center gap-4">
@@ -302,7 +309,7 @@ function App() {
                   onChange={handleInputChange}
                   onKeyUp={handleOnKeyEnter}
                   className={`${
-                    inputError ? "shake-rotate shake-settings" : ""
+                    inputError ? 'shake-rotate shake-settings' : ''
                   } transition`}
                 />
                 <Button onClick={handleAddString}>新增題目</Button>
