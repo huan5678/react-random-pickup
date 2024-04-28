@@ -1,4 +1,5 @@
 import backgroundImg from "@/assets/images/bg.jpg";
+import { Toaster } from "@/components/ui/toaster";
 
 export default function RootLayout({
   children,
@@ -13,6 +14,7 @@ export default function RootLayout({
         alt="background"
       />
       {children}
+      <Toaster />
     </main>
   );
 }
