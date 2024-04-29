@@ -1,142 +1,102 @@
-import {useCallback, useEffect, useReducer, useRef, useState} from 'react';
-import {useTransition, animated} from '@react-spring/web';
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useTransition, animated } from "@react-spring/web";
+import { useShallow } from "zustand/react/shallow";
 
-import {Button} from './components/ui/button';
-import {Input} from './components/ui/input';
-import Confetti from './components/Confetti';
-import Dialog from './components/Dialog';
-import StringSpinner from './components/StringSpinner';
+import useStore from "@/store";
+
+import RootLayout from "@/Layout";
+
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import Config from "@/components/Config";
+import StringSpinner from "@/components/StringSpinner";
+import { Separator } from "@/components/ui/separator";
 
 function App() {
-  const [input, setInput] = useState<string>('');
+  const { mainTitle, subTitle, drawCount } = useStore(
+    useShallow((state) => state.config)
+  );
+  const dataList = useStore((state) => state.dataList);
+  const updateData = useStore((state) => state.updateData);
+  const selectedStrings = useStore((state) => state.selectedStrings);
+  const setSelectedStrings = useStore((state) => state.setSelectedStrings);
+  const clearSelectedStrings = useStore((state) => state.clearSelectedStrings);
+  const setShowConfetti = useStore((state) => state.setShowConfetti);
+  const [openDialog, setOpenDialog] = useState<boolean>(false);
   const [isSpinning, setIsSpinning] = useState<boolean>(false);
-  const [showConfetti, setShowConfetti] = useState<boolean>(false);
-  const [inputError, setInputError] = useState<boolean>(false);
-  const [currentItem, setCurrentItem] = useState<ICurrentItem>({display: '', index: null});
-
-  const initialState: StringListState = {
-    strings: [],
-    selectedStrings: [],
-  };
-
-  const stringListReducer = (state: StringListState, action: StringListAction): StringListState => {
-    switch (action.type) {
-      case 'ADD_STRING':
-        return {...state, strings: [...state.strings, action.payload as string]};
-      case 'SELECT_STRING':
-        return {
-          ...state,
-          strings: state.strings.filter((_, index) => index !== action.payload),
-          selectedStrings: [
-            ...state.selectedStrings,
-            String(state.strings[action.payload as number]),
-          ],
-        };
-      case 'REMOVE_STRING':
-        return {
-          ...state,
-          strings: state.strings.filter((_, index) => index !== action.payload),
-        };
-      case 'CLEAR_SELECT_STRINGS':
-        return {...state, selectedStrings: []};
-      default:
-        return state;
-    }
-  };
-
-  const [state, dispatch] = useReducer(stringListReducer, initialState);
-  const {strings, selectedStrings} = state;
 
   const animationFrameId = useRef<number | null>(null);
 
-  const dialogRef = useRef<HTMLDialogElement>(null);
-
-  const addString = (newString: string) => {
-    dispatch({type: 'ADD_STRING', payload: newString});
-  };
-
-  const selectString = useCallback((index: number) => {
-    dispatch({type: 'SELECT_STRING', payload: index});
-  }, []);
-
-  const removeString = useCallback((index: number) => {
-    dispatch({type: 'REMOVE_STRING', payload: index});
-  }, []);
-
-  const transitions = useTransition(strings, {
-    from: {opacity: 0, transform: 'translateY(-20px)'},
-    enter: {opacity: 1, transform: 'translateY(0)'},
-    leave: {opacity: 0, transform: 'translateY(20px)'},
-  });
-
   const selectedTransitions = useTransition(selectedStrings, {
-    from: {opacity: 0, transform: 'translateY(-20px)'},
-    enter: {opacity: 1, transform: 'translateY(0)'},
-    leave: {opacity: 0, transform: 'translateY(20px)'},
+    from: { opacity: 0, transform: "translateY(-20px)" },
+    enter: { opacity: 1, transform: "translateY(0)" },
+    leave: { opacity: 0, transform: "translateY(20px)" },
   });
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInput(e.target.value);
-  };
-
-  const handleOnKeyEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') handleAddString();
-  };
 
   const handleClearSelectStrings = () => {
-    dispatch({type: 'CLEAR_SELECT_STRINGS', payload: null});
+    clearSelectedStrings();
   };
-
-  const handleAddString = () => {
-    if (input.trim() !== '') {
-      addString(input.trim());
-      setInput('');
-    } else {
-      setInputError(true);
-      setTimeout(() => setInputError(false), 500);
-    }
-  };
-
-  function toggleDialog() {
-    if (!dialogRef.current) {
-      return;
-    }
-    dialogRef.current.hasAttribute('open')
-      ? dialogRef.current.close()
-      : dialogRef.current.showModal();
-  }
 
   const animate = () => {
     const update = () => {
-      const randomIndex = Math.floor(Math.random() * strings.length);
-      setCurrentItem({display: strings[randomIndex], index: randomIndex});
       animationFrameId.current = requestAnimationFrame(update);
     };
     animationFrameId.current = requestAnimationFrame(update);
   };
 
-  const stopAnimation = useCallback(
-    (selectedIndex: number) => {
-      if (animationFrameId.current) cancelAnimationFrame(animationFrameId.current);
-      setCurrentItem({display: strings[selectedIndex], index: null});
+  const stopPickup = useCallback(
+    (selectedIndexes: number[]) => {
+      if (animationFrameId.current)
+        cancelAnimationFrame(animationFrameId.current);
       setIsSpinning(false);
       setShowConfetti(true);
-      toggleDialog();
-      selectString(selectedIndex);
+      selectedIndexes.forEach((index) => {
+        const selectedData = dataList[index];
+        setSelectedStrings(selectedData);
+      });
+      setOpenDialog(true);
     },
-    [strings, selectString]
+    [dataList, setSelectedStrings, setShowConfetti]
   );
 
-  const startAnimation = () => {
-    if (strings.length === 0) return;
-
-    setIsSpinning(true);
+  const startPickup = () => {
+    if (dataList.length === 0) return;
     setShowConfetti(false);
+    setIsSpinning(true);
     animate();
 
-    // 預先選擇一個隨機索引，並在5秒後停止動畫
-    const selectedIndex = Math.floor(Math.random() * strings.length);
-    setTimeout(() => stopAnimation(selectedIndex), 5000);
+    // 過濾出未選中的項目
+    const unselectedData = dataList.filter((data) => !data.selected);
+
+    // 預先選擇指定數量的隨機索引
+    const selectedIndexes: number[] = [];
+    while (
+      selectedIndexes.length < drawCount &&
+      selectedIndexes.length < unselectedData.length
+    ) {
+      const randomIndex = Math.floor(Math.random() * unselectedData.length);
+      if (!selectedIndexes.includes(randomIndex)) {
+        selectedIndexes.push(randomIndex);
+      }
+    }
+
+    // 更新選中的項目狀態
+    selectedIndexes.forEach((index) => {
+      const selectedData = unselectedData[index];
+      updateData({ ...selectedData, selected: true });
+    });
+
+    // 在3秒後停止動畫,並一次性顯示所有選擇的結果
+    setTimeout(() => {
+      stopPickup(selectedIndexes);
+    }, 2000);
   };
   useEffect(() => {
     // 當組件卸載時，清除動畫
@@ -148,71 +108,103 @@ function App() {
   }, []);
 
   return (
-    <section className="flex flex-col items-center justify-center h-screen px-4 md:px-0">
-      <h1 className="mb-4 text-2xl uppercase">Welcome Welcome</h1>
-      <div className="flex flex-col w-full gap-4 mx-auto sm:w-3/4 md:w-4/6 lg:w-1/2 xl:w-1/3">
-        <Input
-          type="text"
-          placeholder="輸入字串"
-          value={input}
-          onChange={handleInputChange}
-          onKeyUp={handleOnKeyEnter}
-          className={`${inputError ? 'shake-rotate shake-settings' : ''} transition`}
-        />
-        <div className="flex justify-center gap-4">
-          <Button onClick={handleAddString}>新增候選人</Button>
-          <Button onClick={startAnimation} disabled={strings.length <= 1 || isSpinning}>
-            自信一抽
-          </Button>
-        </div>
-        <div>{isSpinning && <StringSpinner strings={strings} />}</div>
-        <Dialog toggleDialog={toggleDialog} ref={dialogRef}>
-          <h2 className="text-4xl">恭喜</h2>
-          <p className="text-2xl">獲選的是: {currentItem.display}</p>
-        </Dialog>
-        {strings.length > 0 && (
-          <ul className="flex flex-col gap-2 px-6 py-4 border divide-y rounded shadow">
-            {transitions((style, string, _, index) => (
-              <animated.li
-                key={string}
-                className="relative flex items-center justify-between pt-2"
-                style={style}
-              >
-                {currentItem.index === index && isSpinning && (
-                  <span className="absolute top-0 left-0 -translate-x-6">👉</span>
-                )}
-                {string}
-                <Button variant="outline" size="icon" onClick={() => removeString(index)}>
-                  ❌
-                </Button>
-              </animated.li>
-            ))}
-          </ul>
-        )}
-        {selectedStrings.length > 0 && (
-          <div>
-            <h3>恭喜入選人:</h3>
-            <ul className="flex flex-col gap-4 mb-2">
-              {selectedTransitions((style, string) => (
-                <animated.li
-                  key={string}
-                  style={style}
-                  className={'px-6 py-4 border rounded shadow'}
-                >
-                  {string}
-                </animated.li>
-              ))}
-            </ul>
-            <div className="flex justify-end w-full">
-              <Button variant="outline" onClick={() => handleClearSelectStrings()}>
-                清空
-              </Button>
-            </div>
+    <RootLayout>
+      <div className="container py-12 space-y-4 text-primary-foreground">
+        <h1 className="text-4xl font-bold tracking-wide text-center">
+          {mainTitle}
+        </h1>
+        <h2 className="text-3xl font-bold text-center">{subTitle}</h2>
+      </div>
+      <section className="container flex flex-col justify-between gap-4 px-4 py-8 bg-background rounded-2xl">
+        {selectedStrings.length === 0 && (
+          <div className="flex flex-col items-end gap-2">
+            <p>目前題目數: {dataList.filter((q) => !q.selected).length}</p>
+            <Button
+              type="button"
+              onClick={startPickup}
+              disabled={dataList.length <= drawCount || isSpinning}
+            >
+              隨機抽選
+            </Button>
           </div>
         )}
-        {showConfetti && <Confetti />}
+        {isSpinning && (
+          <StringSpinner strings={dataList} drawCount={drawCount} />
+        )}
+        <div className="flex flex-col w-full gap-4 mx-auto">
+          <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle className="text-4xl">抽選結果</DialogTitle>
+              </DialogHeader>
+              <DialogDescription>獲選的是:</DialogDescription>
+              <ul>
+                {selectedStrings.map((item) => (
+                  <li className="text-2xl" key={item.name}>
+                    {item.name}
+                  </li>
+                ))}
+              </ul>
+            </DialogContent>
+          </Dialog>
+          {selectedStrings.length > 0 && (
+            <div>
+              <h3 className="mb-2 text-2xl text-center">本次獲選的是</h3>
+              <Separator />
+              <ul className="flex flex-col max-w-screen-lg gap-4 mx-auto mb-2">
+                {selectedTransitions((style, string) => (
+                  <animated.li
+                    key={string.name}
+                    style={style}
+                    className={`px-6 py-4 text-lg md:text-6xl text-center bg-primary rounded-xl text-primary-foreground`}
+                  >
+                    {string.name}
+                  </animated.li>
+                ))}
+              </ul>
+              <div className="flex justify-end w-full">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => handleClearSelectStrings()}
+                >
+                  清空
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+        {dataList.filter((q) => q.selected).length > 0 && (
+          <div className="flex justify-end">
+            <Dialog>
+              <DialogTrigger>
+                <div className="flex items-center justify-center h-10 px-4 py-2 text-sm font-medium transition-colors rounded-md whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90">
+                  察看歷史項目
+                </div>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle className="text-4xl">已選擇的項目</DialogTitle>
+                </DialogHeader>
+                <DialogDescription>目前已抽選過的項目:</DialogDescription>
+                <ul className="space-y-2">
+                  {dataList
+                    .filter((q) => q.selected)
+                    .map((item) => (
+                      <li className="text-2xl" key={item.name}>
+                        {item.name}
+                      </li>
+                    ))}
+                </ul>
+              </DialogContent>
+            </Dialog>
+          </div>
+        )}
+      </section>
+      <div className="container absolute bottom-0 right-0 flex items-center justify-end w-full max-w-lg gap-4 mb-2 text-white -translate-x-4 -translate-y-4 opacity-25">
+        <Config />
       </div>
-    </section>
+    </RootLayout>
   );
 }
 
