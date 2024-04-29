@@ -13,7 +13,7 @@ export default function RootLayout({
       <main className="relative min-h-screen to-black/90 from-black/90 via-black/10 bg-gradient-to-b">
         <img
           src={background}
-          className="absolute z-[-1] object-cover w-full max-h-screen rotate-180"
+          className="absolute z-[-1] object-cover w-full h-screen max-h-screen rotate-180"
           alt="background"
         />
         {children}
