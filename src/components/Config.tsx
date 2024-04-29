@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { X } from "lucide-react";
 import { useShallow } from "zustand/react/shallow";
+import { useWindowSize } from "usehooks-ts";
 
 import useStore from "@/store";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -26,11 +28,15 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Separator } from "@/components/ui/separator";
+
 import { quest1 } from "@/data/quest1";
 import { quest2 } from "@/data/quest2";
 import { IData } from "@/types/";
 
 export default function Config() {
+  const width = useWindowSize().width;
+  const screen = { width };
   const { toast } = useToast();
   const config = useStore(useShallow((state) => state.config));
   const { background, mainTitle, subTitle, drawCount } = config;
@@ -86,7 +92,7 @@ export default function Config() {
       });
     }
   };
-
+  console.log(screen.width);
   return (
     <Drawer>
       <DrawerTrigger>設定</DrawerTrigger>
@@ -111,6 +117,10 @@ export default function Config() {
                 }}
               />
             </div>
+            <Separator
+              className="md:h-24"
+              orientation={screen.width < 768 ? "horizontal" : "vertical"}
+            />
             <div className="flex flex-col items-center justify-center gap-4">
               <Label htmlFor="subTitle" className="block text-lg">
                 副標題名稱
@@ -125,6 +135,10 @@ export default function Config() {
                 }}
               />
             </div>
+            <Separator
+              className="md:h-24"
+              orientation={screen.width < 768 ? "horizontal" : "vertical"}
+            />
             <div className="space-y-4">
               <h3 className="text-lg text-center">一次抽選數量</h3>
               <Input
@@ -139,6 +153,10 @@ export default function Config() {
                 }}
               />
             </div>
+            <Separator
+              className="md:h-24"
+              orientation={screen.width < 768 ? "horizontal" : "vertical"}
+            />
             <div className="flex flex-col items-center justify-center gap-4">
               <Label htmlFor="background" className="block text-lg">
                 背景圖片
@@ -154,6 +172,10 @@ export default function Config() {
               />
             </div>
           </div>
+          <Separator
+            className="md:h-24"
+            orientation={screen.width < 768 ? "horizontal" : "vertical"}
+          />
           <div className="grid w-full grid-cols-2 gap-4 md:flex md:justify-center md:w-auto">
             <Dialog>
               <DialogTrigger className="flex items-center justify-center h-10 px-4 py-2 text-sm font-medium transition-colors rounded-md whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90">
@@ -226,6 +248,7 @@ export default function Config() {
             </div>
           </div>
         </div>
+        <Separator className="my-2 md:my-4" />
         <div>
           <Label htmlFor="input" className="text-lg text-center">
             手動輸入項目
