@@ -1,4 +1,3 @@
-
 export type ICurrentItem = {
   display: string;
   index: number | null;
@@ -9,38 +8,23 @@ export type StringListState = {
   selectedStrings: string[];
 };
 
-export type StringListAction = {
-  type: 'ADD_STRING' | 'SELECT_STRING' | 'REMOVE_STRING' | 'CLEAR_SELECT_STRINGS';
-  payload: string | number | null;
-};
-
-export type IAppTitle = {
-  mainTitle: string;
-  subTitle: string;
-};
-
-export type IRank = "rematch" | "finals" | "unused";
-
-export type IQuest = {
+export type IData = {
   _id: string;
   selected: boolean;
   name: string;
-  rank?: IRank;
   isUsed?: boolean;
 };
 
-export type IQuestRequest = {
-  name: string;
-  rank: IRank;
-  selected: boolean;
-};
-
 export type StringSpinnerProps = {
-  strings: IQuest[];
+  strings: IData[];
   interval?: number;
+  drawCount?: number;
 };
 
 export type IConfig = {
-  drawCount: number,
-  selectedStrings: IQuest[],
+  mainTitle: string;
+  subTitle: string;
+  background: string | '*.jpg' | '*.png';
+  drawCount: number;
+  showConfetti: boolean;
 };
