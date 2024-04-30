@@ -5,13 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Confetti from "@/components/Confetti";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
   Drawer,
   DrawerClose,
   DrawerContent,
@@ -32,7 +25,6 @@ function App() {
   const [quests, setQuests] = useState<IQuest[]>([]);
   const [input, setInput] = useState<string>("");
   const [drawCount, setDrawCount] = useState<number>(1);
-  const [openDialog, setOpenDialog] = useState<boolean>(false);
   const [rank, setRank] = useState<IRank>("unused");
   const [isSpinning, setIsSpinning] = useState<boolean>(false);
   const [showConfetti, setShowConfetti] = useState<boolean>(false);
@@ -148,15 +140,15 @@ function App() {
   return (
     <RootLayout>
       <div className="py-12 space-y-4 text-white">
-        <h1 className="text-4xl font-bold tracking-wide text-center">
+        <h1 className="text-2xl font-bold tracking-wide text-center md:text-4xl">
           2024台灣AI生成大賽(鳥巢盃)
         </h1>
-        <h2 className="text-3xl font-bold text-center">
-          {rank === 'rematch'
-            ? '複賽'
-            : rank === 'finals'
-            ? '決賽'
-            : '預備階段'}{' '}
+        <h2 className="text-xl font-bold text-center md:text-3xl">
+          {rank === "rematch"
+            ? "複賽"
+            : rank === "finals"
+            ? "決賽"
+            : "預備階段"}{" "}
           出題系統
         </h2>
       </div>
@@ -176,30 +168,17 @@ function App() {
           )}
           {isSpinning && <StringSpinner strings={quests} />}
           <div className="flex flex-col w-full gap-4 mx-auto">
-            <Dialog open={openDialog} onOpenChange={setOpenDialog}>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle className="text-4xl">抽選結果</DialogTitle>
-                </DialogHeader>
-                <DialogDescription>獲選的是:</DialogDescription>
-                <ul>
-                  {selectedStrings.map((item) => (
-                    <li className="text-lg" key={item.name}>
-                      {item.name}
-                    </li>
-                  ))}
-                </ul>
-              </DialogContent>
-            </Dialog>
             {selectedStrings.length > 0 && (
               <div>
-                <h3 className="mb-2 text-lg">本輪題目是:</h3>
+                <h3 className="mb-2 text-lg md:text-xl">本輪題目是:</h3>
                 <ul className="flex flex-col gap-4 mb-2">
                   {selectedTransitions((style, string) => (
                     <animated.li
                       key={string.name}
                       style={style}
-                      className={'px-6 py-4 border rounded shadow text-6xl'}
+                      className={
+                        "px-6 py-4 border rounded shadow text-2xl md:text-6xl"
+                      }
                     >
                       {string.name}
                     </animated.li>
@@ -230,65 +209,87 @@ function App() {
             <DrawerDescription>
               參數相關設定，包含比賽階段、抽選數量、題目名稱、題庫選擇等。
             </DrawerDescription>
-            <div className="flex items-center gap-8 py-8">
-              <div className="flex flex-col items-center justify-center gap-4">
-                <Label htmlFor="gameTitle" className="block text-lg">
+            <div className="flex flex-col items-end justify-between gap-8 py-8 md:flex-row">
+              <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
+                <Label
+                  htmlFor="gameTitle"
+                  className="block text-lg text-center"
+                >
                   比賽階段
                 </Label>
-                <Button
-                  type="button"
-                  id="gameTitle"
-                  onClick={() => setRank('rematch')}
-                  variant={rank === 'rematch' ? 'secondary' : 'outline'}
-                >
-                  複賽
-                </Button>
-                <Button
-                  type="button"
-                  id="gameTitle"
-                  onClick={() => setRank('finals')}
-                  variant={rank === 'finals' ? 'default' : 'outline'}
-                >
-                  決賽
-                </Button>
+                <div className="flex justify-center gap-4">
+                  <div className="flex flex-col items-center justify-center gap-4">
+                    <Button
+                      type="button"
+                      id="gameTitle"
+                      onClick={() => setRank("rematch")}
+                      variant={rank === "rematch" ? "secondary" : "outline"}
+                    >
+                      複賽
+                    </Button>
+                  </div>
+                  <div className="flex flex-col items-center justify-center gap-4">
+                    <Button
+                      type="button"
+                      id="gameTitle"
+                      onClick={() => setRank("finals")}
+                      variant={rank === "finals" ? "default" : "outline"}
+                    >
+                      決賽
+                    </Button>
+                  </div>
+                </div>
               </div>
               <div className="space-y-4">
                 <h3 className="text-lg text-center">抽選數量</h3>
-                <div className="flex items-center gap-4">
-                  <Label htmlFor="drawCount">單抽</Label>
-                  <Switch
-                    id="drawCount"
-                    value={drawCount}
-                    onCheckedChange={(value: boolean) =>
-                      setDrawCount(value === true ? 3 : 1)
-                    }
-                  />
-                  <Label htmlFor="drawCount">三連抽</Label>
+                <div className="flex flex-wrap items-center gap-4">
+                  <div className="flex items-center justify-center w-full gap-4 md:w-auto">
+                    <Label htmlFor="drawCount">單抽</Label>
+                    <Switch
+                      id="drawCount"
+                      value={drawCount}
+                      onCheckedChange={(value: boolean) =>
+                        setDrawCount(value === true ? 3 : 1)
+                      }
+                    />
+                    <Label htmlFor="drawCount">三連抽</Label>
+                  </div>
+                  <div className="w-full md:w-auto">
+                    <Label
+                      htmlFor="manualDrawCount"
+                      className="text-lg text-center"
+                    >
+                      手動輸入
+                    </Label>
+                    <Input
+                      id="manualDrawCount"
+                      type="number"
+                      value={drawCount}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        setDrawCount(parseInt(e.target.value))
+                      }
+                    />
+                  </div>
                 </div>
-                <Input
-                  type="number"
-                  value={drawCount}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    setDrawCount(parseInt(e.target.value))
-                  }
-                />
               </div>
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex flex-col items-center gap-4">
+              <div className="flex items-center justify-between w-full gap-4 md:w-auto">
+                <div className="flex flex-col items-center flex-auto w-full gap-4 md:w-auto">
                   <Label htmlFor="setQuest1">讀取題庫1</Label>
                   <Button
                     type="button"
                     id="setQuest1"
+                    className="w-full md:w-auto"
                     onClick={() => handleAddQuestion(quest1)}
                   >
                     加入題庫
                   </Button>
                 </div>
-                <div className="flex flex-col items-center gap-4">
+                <div className="flex flex-col items-center flex-auto w-full gap-4 md:w-auto">
                   <Label htmlFor="setQuest2">讀取題庫2</Label>
                   <Button
                     type="button"
                     id="setQuest2"
+                    className="w-full md:w-auto"
                     onClick={() => handleAddQuestion(quest2)}
                   >
                     加入題庫
@@ -300,19 +301,21 @@ function App() {
               <Label htmlFor="input" className="text-lg">
                 手動輸入題目名稱
               </Label>
-              <div className="flex gap-4">
+              <div className="flex flex-wrap gap-4 md:flex-nowrap">
                 <Input
                   id="input"
                   type="text"
-                  placeholder="輸入字串"
+                  placeholder="輸入字串，支援輸入','分隔多題目"
                   value={input}
                   onChange={handleInputChange}
                   onKeyUp={handleOnKeyEnter}
                   className={`${
-                    inputError ? 'shake-rotate shake-settings' : ''
+                    inputError ? "shake-rotate shake-settings" : ""
                   } transition`}
                 />
-                <Button onClick={handleAddString}>新增題目</Button>
+                <Button className="w-full md:w-auto" onClick={handleAddString}>
+                  新增題目
+                </Button>
               </div>
             </div>
             <DrawerFooter>

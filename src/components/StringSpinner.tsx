@@ -19,9 +19,12 @@ const StringSpinner = ({strings, interval = 100}: StringSpinnerProps) => {
   const itemsToShow = [strings[prevIndex], strings[index], strings[nextIndex]];
 
   return (
-    <div className="flex flex-col items-stretch justify-center h-64 gap-2 overflow-hidden divide-y">
+    <div className="flex flex-col items-stretch justify-center h-48 gap-2 overflow-hidden divide-y md:h-64">
       {itemsToShow.map((item, i) => (
-        <div key={i} className="flex-1 inline-block text-6xl text-center h-1/3">
+        <div
+          key={i}
+          className="flex-1 inline-block text-2xl text-center md:text-6xl h-1/3"
+        >
           {item.name}
         </div>
       ))}
