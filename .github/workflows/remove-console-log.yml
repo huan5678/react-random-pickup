@@ -1,0 +1,20 @@
+name: Remove Console Log
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  remove-console-log:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Remove console.log
+      run: |
+        find . -type f -name '*.js' -exec sed -i -E '/\/\*.*\*\//! s/^\s*console\.log\((.*)\)/\/\/ console.log(\1)/g; /\/\//! s/^\s*console\.log\((.*)\)/\/\/ console.log(\1)/g' {} +
+
+    - uses: stefanzweifel/git-auto-commit-action@v4
+      with:
+        commit_message: 'chore: remove console.log'
